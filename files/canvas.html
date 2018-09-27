@@ -143,16 +143,34 @@
         ctx.setLineDash([])
         ctx.moveTo(450, 400)
         //anchorX, anchorY, endX, endY
-        ctx.quadraticCurveTo(150, 275, 250, 400)
-        ctx.quadraticCurveTo(150, 225, 450, 400)
-        ctx.quadraticCurveTo(150, 175, 250, 400)
-        ctx.quadraticCurveTo(150, 525, 450, 400)
-        ctx.quadraticCurveTo(150, 575, 250, 400)
+        ctx.quadraticCurveTo(500, 275, 550, 400)
+        ctx.quadraticCurveTo(500, 225, 450, 400)
+        ctx.quadraticCurveTo(500, 175, 550, 400)
+        ctx.quadraticCurveTo(230, 575, 450, 400)
+        ctx.quadraticCurveTo(190, 600, 550, 400)
         ctx.quadraticCurveTo(150, 625, 450, 400)
         ctx.fill()
         ctx.stroke()
         ctx.closePath()
 
+        //BezierCurves
+        ctx.beginPath()
+        ctx.moveTo(300,100)
+        //startAnchorX, startAnchorY, endAnchorX, endAnchorY, endX, endY
+        ctx.bezierCurveTo(400,200,400,0,500,100)
+        ctx.stroke()
+        ctx.closePath()
+
+        //complex?
+        ctx.beginPath()
+        ctx.moveTo(600,400)
+        //firstTangentX, firstTangentY, secondTangentX,secondTangentY,r
+        ctx.arcTo(700,400,900,800, 100)
+        ctx.lineTo(850,350)
+        ctx.lineTo(600,400)
+        ctx.fill()
+        ctx.stroke()
+        ctx.closePath()
 
     </script>
 </body>
