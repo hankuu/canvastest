@@ -73,7 +73,83 @@
 
         ctx.lineWidth = 4
         ctx.beginPath()
+        ctx.setLineDash([12,6])
         ctx.arc(500, 200, 50, 0, 2*Math.PI)
+        ctx.stroke()
+        ctx.closePath()
+
+        //Lines
+        ctx.setLineDash([]) //turn dash off
+        ctx.lineWidth = ctx.getLineWidth/2
+        ctx.beginPath()
+        ctx.moveTo(600, 50)
+        ctx.lineTo(700,150)
+        ctx.stroke()
+        ctx.closePath()
+
+        //Styling lines
+        ctx.strokeStyle = "tomato"
+        ctx.lineWidth = 6
+        ctx.beginPath()
+        ctx.lineCap = "round"
+        ctx.setLineDash([5,15])
+        ctx.moveTo(650,50)
+        ctx.lineTo(800, 200)
+        ctx.stroke()
+        ctx.closePath()
+
+        ctx.strokeStyle = "tomato"
+        ctx.lineWidth = 6
+        ctx.beginPath()
+        ctx.lineCap = "round"
+        //perhaps something very uneven?
+        ctx.setLineDash([30,20,10])
+        ctx.moveTo(650,50)
+        ctx.lineTo(800, 300)
+        ctx.stroke()
+        ctx.closePath()
+
+        //Curved Lines
+        ctx.lineWidth = 0.5
+        ctx.strokeStyle = "black"
+        ctx.beginPath()
+        ctx.setLineDash([])
+        ctx.moveTo(50, 400)
+        //anchorX, anchorY, endX, endY
+        ctx.quadraticCurveTo(150, 275, 250, 400)
+        ctx.quadraticCurveTo(150, 225, 50, 400)
+        ctx.quadraticCurveTo(150, 175, 250, 400)
+        ctx.quadraticCurveTo(150, 525, 50, 400)
+        ctx.quadraticCurveTo(150, 575, 250, 400)
+        ctx.quadraticCurveTo(150, 625, 50, 400)
+        ctx.fill()
+        ctx.stroke()
+        ctx.closePath()
+
+        ctx.fillStyle = "rgba(85,107,47,0.24)"
+        ctx.beginPath()
+        ctx.setLineDash([])
+        ctx.moveTo(250, 400)
+        //anchorX, anchorY, endX, endY
+        ctx.quadraticCurveTo(350, 275, 450, 400)
+        ctx.quadraticCurveTo(350, 175, 250, 400)
+        ctx.fill()
+        ctx.stroke()
+        ctx.closePath()
+
+        ctx.lineWidth = 0.5
+        ctx.strokeStyle = "black"
+        ctx.beginPath()
+        ctx.setLineDash([])
+        ctx.moveTo(450, 400)
+        //anchorX, anchorY, endX, endY
+        ctx.quadraticCurveTo(150, 275, 250, 400)
+        ctx.quadraticCurveTo(150, 225, 450, 400)
+        ctx.quadraticCurveTo(150, 175, 250, 400)
+        ctx.quadraticCurveTo(150, 525, 450, 400)
+        ctx.quadraticCurveTo(150, 575, 250, 400)
+        ctx.quadraticCurveTo(150, 625, 450, 400)
+        ctx.fill()
         ctx.stroke()
         ctx.closePath()
 
