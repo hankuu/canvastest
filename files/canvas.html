@@ -12,16 +12,18 @@
         let canvas = d3.select("body")
             .append("canvas")
             .attr("width", 1000)
-            .attr("height", 700)
+            .attr("height", 700);
         //You can style the canvas as if it were an image
-        canvas.style("border", "1px solid #4DB7B0")
+        canvas.style("border", "1px solid #4DB7B0");
+        
         //Get the 2D context from the canvas element
-        let ctx = canvas.node().getContext("2d")
+        let ctx = canvas.node().getContext("2d");
         
         //Define fill color
-        ctx.fillStyle("#4DB7B0")
+        ctx.fillStyle = "#4DB7B0";
         
         //Draw a rectangualar and fill it
-        ctx.fillRect(10,10,100,100)
+        ctx.fillRect(10,10,100,100);
+        
     </script>
 </body>
