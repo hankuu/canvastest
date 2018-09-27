@@ -50,6 +50,32 @@
         //Apparently better to use svg for text
 
         //circle
+        ctx.fillStyle = "#4db7b0"
+        //any path begins with beginPath()
+        ctx.beginPath()
+        //draw circle with: cx, cy, r, startAngle, endAngle
+        ctx.arc(500, 150, 50, 0, 2*Math.PI)
+        //fill path
+        ctx.fill()
+        //paths close with closePath()
+        ctx.closePath()
+
+        //Note, this will not draw a 2/3 of a circle
+        ctx.beginPath()
+        ctx.arc(500, 200, 50, 0, 2/3*Math.PI)
+        ctx.fill()
+        ctx.closePath()
+
+        ctx.beginPath()
+        ctx.arc(500, 200, 50, 1/3*Math.PI, Math.PI)
+        ctx.fill()
+        ctx.closePath()
+
+        ctx.lineWidth = 4
+        ctx.beginPath()
+        ctx.arc(500, 200, 50, 0, 2*Math.PI)
+        ctx.stroke()
+        ctx.closePath()
 
 
     </script>
