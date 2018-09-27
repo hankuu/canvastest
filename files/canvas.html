@@ -15,27 +15,42 @@
             .attr("height", 700);
         //You can style the canvas as if it were an image
         canvas.style("border", "1px solid #4DB7B0");
-        
+
         //Get the 2D context from the canvas element
         let ctx = canvas.node().getContext("2d");
-        
+
         //Define fill color
         ctx.fillStyle = "#4DB7B0";
-        
+
         //Draw a rectangualar and fill it
         ctx.fillRect(10,10,100,100);
-        
+
         //Draw another rectangle -> transparency!!
         ctx.fillStyle = "rgba(228, 31, 104, 0.5)";
         ctx.fillRect(50,50,150,150)
-        
+
         //how about drawing too close to canvas border?
         ctx.fillRect(900,50,150,150)
-        
+
         //Using only stroke
-        ctx.strokeStyle = "e42068";
+        ctx.strokeStyle = "#e42068";
         ctx.lineWidth = 3;
         ctx.strokeRect(30,30,100,100);
-        
+
+        //text
+        ctx.fillStyle = "tomato";
+        ctx.font = "25px OpenSansCondensed";
+        ctx.fillText("testing texts", 250, 100);
+
+        //text with stroke
+        ctx.strokeStyle = "blue";
+        ctx.lineWidth = 1;
+        ctx.strokeText("testing", 250,100);
+
+        //Apparently better to use svg for text
+
+        //circle
+
+
     </script>
 </body>
