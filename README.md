@@ -12,3 +12,6 @@ original: [nbremer/canvastutorial](https://github.com/nbremer/canvastutorial).
 3. For production: `https://cdn.rawgit.com/<username>/<repository>/master/<filename>.html`
 
 Tip from [Michael Crump](https://www.michaelcrump.net/how-to-run-html-files-in-your-browser-from-github/)
+
+# view canvas.html live
+view [live](https://hankuu.github.io/canvastest/files/canvas.html)
