@@ -25,5 +25,17 @@
         //Draw a rectangualar and fill it
         ctx.fillRect(10,10,100,100);
         
+        //Draw another rectangle -> transparency!!
+        ctx.fillStyle = "rgba(228, 31, 104, 0.5)";
+        ctx.fillRect(50,50,150,150)
+        
+        //how about drawing too close to canvas border?
+        ctx.fillRect(900,50,150,150)
+        
+        //Using only stroke
+        ctx.strokeStyle = "e42068";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(30,30,100,100);
+        
     </script>
 </body>
