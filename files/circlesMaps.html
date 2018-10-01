@@ -6,12 +6,12 @@
 <body>
   <script>
 
-    function piirraYmpyra(x,y,r) {
-      cx.beginPath()
-      cx.arc(x,y,r,0,2*Math.PI)
-      cx.fill()
-      cx.closePath()
-    }
+    // function piirraYmpyra(x,y,r) {
+    //   cx.beginPath()
+    //   cx.arc(x,y,r,0,2*Math.PI)
+    //   cx.fill()
+    //   cx.closePath()
+    // }
 
     imdbData = d3.csv("imdb-movies.csv", function(data){
       data.forEach(function(d){
@@ -34,10 +34,10 @@
       //context
       let cx = canvas.node().getContext("2d")
 
-      cx.fillStyle = "rgba(200,200,255,0.8)"
-      piirraYmpyra(500,500,100)
-      piirraYmpyra(450,450,80)
-      piirraYmpyra(550,600,100)
+      // cx.fillStyle = "rgba(200,200,255,0.8)"
+      // piirraYmpyra(500,500,100)
+      // piirraYmpyra(450,450,80)
+      // piirraYmpyra(550,600,100)
 
 
   </script>
