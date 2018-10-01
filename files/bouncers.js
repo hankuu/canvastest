@@ -14,21 +14,48 @@ function resize() {
   //TODO draw everything back in
 }
 
-console.log(winH)
-console.log(winW)
+var x = 200;
+var y = 200;
+var side = 100;
+var dx = 5;
+var dy = 5;
+function animate() {
+    window.requestAnimationFrame(animate);
+    context.clearRect(0,0, winW, winH)
 
+    context.fillStyle = "rgba(150, 248, 30, .6)"
+    context.fillRect(x, y, side, side);
+
+    //Check window left&right
+    if(x > (winW-side) || x < 0) {
+      dx = -dx;
+    }
+
+    //Check window top&bottom
+    if(y > (winH-side) || y < 0) {
+      dy = -dy;
+    }
+
+    x += dx
+    y += dy
+}
+
+//Create Canvas
 var canvas = d3.select("body")
   .append("canvas")
   .attr("width", winW)
   .attr("height", winH)
 
-canvas.style("border","20px solid green")
+//Test style
+//canvas.style("border","20px solid green")
 
+//Get context
 var context = canvas.node().getContext("2d")
 
 //Define fill color
-context.fillStyle = "#4DB7B0"
+//context.fillStyle = "rgba(150, 248, 30, .6)"
 
-context.fillRect(10,10,100,100)
-
-context.fillRect(50,50,300,300)
+//for (var i=0; i < 10; i++) {
+  //context.fillRect(10,10,100,100)
+//}
+animate();
