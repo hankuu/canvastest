@@ -23,8 +23,9 @@ d3.select(window).on('resize', resize);
 //Properties of the square
 
 //starting position
-var x = 0;
-var y = 0;
+//NOTE! Do not start too close to the border. The square will get caught!
+var x = 100;
+var y = 100;
 
 //square side length
 var side = 50;
@@ -38,6 +39,7 @@ var ang = 1;
 var dang = 1
 
 //This function makes things move
+//TODO reorder and make this more efficient
 function animate() {
     window.requestAnimationFrame(animate);
     context.clearRect(0,0, 1000, 500)
@@ -56,6 +58,12 @@ function animate() {
     context.translate(-x, -y)
 
 
+    //Reset angle around 360 and
+    if(ang > 360 || ang < 0) {
+      ang = 0;
+    }
+
+
     //Check window left&right
     //NOTE! Does not take into account if corner happens to cross the border
     if(x > (1000-side/2) || x < side/2) {
@@ -70,10 +78,6 @@ function animate() {
        dang = -dang;
      }
 
-     //Reset angle around 360 and
-     if(ang > 360 || ang < 0) {
-       ang = 0;
-     }
 
    x += dx
    y += dy
