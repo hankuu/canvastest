@@ -1,100 +1,163 @@
-// var winH = window.innerHeight
-// var winW = window.innerWidth
+//Related to canvas size
+let winH = window.innerHeight;
+let winW = window.innerWidth;
 
-//TODO get window values back. Hardcoded for testing purposes
-var winH = 500
-var winW = 500
+//Constant values
+const numSquares = 200;
+const colors = [
+  "rgba(190, 30, 34, .9)",
+  "rgba(190, 83, 18, .9)",
+  "rgba(199, 186, 55, .9)",
+  "rgba(96, 103, 65, .9)"
+];
 
-d3.select(window).on('resize', resize);
-
-
-//TODO fix this
- function resize() {
-  // winH = window.innerHeight
-  // winW = window.innerWidth
-
-  canvas.attr("width", 1000)
-  .attr("height", 500)
-
-
-  //TODO draw everything back in
- }
-
-//Properties of the square
-
-//starting position
-//NOTE! Do not start too close to the border. The square will get caught!
-var x = 100;
-var y = 100;
-
-//square side length
-var side = 50;
-
-//speed
-var dx = 2;
-var dy = 2;
-
-//angle and rotation speed
-var ang = 1;
-var dang = 1
-
-//This function makes things move
-//TODO reorder and make this more efficient
-function animate() {
-    window.requestAnimationFrame(animate);
-    context.clearRect(0,0, 1000, 500)
-
-    //rotate
-    context.fillStyle = "rgba(150, 248, 30, .6)"
-    //move origin
-    context.translate(x, y)
-    //rotate
-    context.rotate(ang*Math.PI / 180);
-    //draw rect in the middle
-    context.fillRect(-side/2, -side/2, side, side);
-    //rotate back
-    context.rotate(-ang*Math.PI / 180);
-    //move origin back
-    context.translate(-x, -y)
-
-
-    //Reset angle around 360 and
-    if(ang > 360 || ang < 0) {
-      ang = 0;
-    }
-
-
-    //Check window left&right
-    //NOTE! Does not take into account if corner happens to cross the border
-    if(x > (1000-side/2) || x < side/2) {
-        dx = -dx;
-        dang = -dang;
-      }
-
-    //Check window top&bottom
-    //NOTE! Does not take into account if corner happens to cross the border
-     if(y > (500-side/2) || y < side/2) {
-       dy = -dy;
-       dang = -dang;
-     }
-
-
-   x += dx
-   y += dy
-   ang += dang
-}
+//Universal properties for every square
+let dx = 2;
+let dy = 2;
+let dang = 1;
 
 //Create Canvas
-var canvas = d3.select("body")
+const canvas = d3
+  .select("body")
   .append("canvas")
-  .attr("width", 1000)
-  .attr("height", 500)
+  .attr("width", winW)
+  .attr("height", winH - 100); //-100 is just for the <h1>
 
 //Just to see the canvas
-canvas.style("border","1px solid green")
+//TODO style elsewhere
+canvas.style("border", "1px solid green");
 
 //Get context
-var context = canvas.node().getContext("2d")
+const context = canvas.node().getContext("2d");
 
+
+//React to window resizing
+d3.select(window).on("resize", resize);
+
+
+//Utilities
+function randomIntFromInterval(
+  min,
+  max // min and max included
+) {
+  return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
+
+function resize() {
+  winH = window.innerHeight;
+  winW = window.innerWidth;
+
+  canvas.attr("width", winW).attr("height", winH - 100); //-100 is just for the <h1>
+
+  init();
+}
+
+/*
+Rotating Square
+  x     : middle point x-coordinate
+  y     : middle point y-coordinate
+  ang   : rotation angle of the square (degrees)
+  side  : side length of the square
+  color : color of the square
+*/
+function RotatingSquare(x, y, ang, side, color) {
+  this.x = x;
+  this.y = y;
+  this.ang = ang;
+  this.side = side;
+  this.color = color;
+  this.velocity = {
+    x: dx,
+    y: dy,
+    rotation: dang
+  };
+}
+
+//Draw the square from the center point
+RotatingSquare.prototype.draw = function() {
+  //rotate
+  context.fillStyle = this.color;
+  //move origin
+  context.translate(this.x, this.y);
+  //rotate
+  context.rotate((this.ang * Math.PI) / 180);
+  //draw rect in the middle
+  context.fillRect(-this.side / 2, -this.side / 2, this.side, this.side);
+  //rotate back
+  context.rotate((-this.ang * Math.PI) / 180);
+  //move origin back
+  context.translate(-this.x, -this.y);
+};
+
+//Update the rotating square's position
+RotatingSquare.prototype.update = function() {
+  //Reset angle around full circles
+  if (this.ang > 360 && this.velocity.dang > 0) {
+    this.ang = 0;
+  } else if (this.ang < 0 && this.velocity.dang < 0) {
+    this.ang = 360;
+  }
+
+  //Check window left&right
+  //NOTE! Does not take into account if corner happens to cross the border
+  if (this.x > winW - this.side / 2 || this.x < this.side / 2) {
+    this.velocity.x = -this.velocity.x;
+    this.velocity.rotation = -this.velocity.rotation;
+  }
+
+  //Check window top&bottom
+  //NOTE! Does not take into account if corner happens to cross the border
+  if (this.y > winH - this.side / 2 || this.y < this.side / 2) {
+    this.velocity.y = -this.velocity.y;
+    this.velocity.rotation = -this.velocity.rotation;
+  }
+
+  //Add velocity
+  this.x += this.velocity.x;
+  this.y += this.velocity.y;
+  this.ang += this.velocity.rotation;
+
+  //Everything set, draw the square  in the new position
+  this.draw();
+};
+
+//Initialize
+//TODO implement initializing actions
+let rSquares;
+function init() {
+  rSquares = [];
+
+  //Create the rotating squares
+  for (let i = 0; i < numSquares; i++) {
+    //Generate random values for the squares
+    var sideLength = randomIntFromInterval(30, 100);
+    var xPos = randomIntFromInterval(sideLength, winW - sideLength);
+    var yPos = randomIntFromInterval(sideLength, winH - sideLength);
+    var startAngle = randomIntFromInterval(0, 359);
+    var color = colors[randomIntFromInterval(0, colors.length - 1)];
+
+    rSquares.push(
+      new RotatingSquare(xPos, yPos, startAngle, sideLength, color)
+    );
+  }
+}
+
+
+//This function makes things move
+function animate() {
+  window.requestAnimationFrame(animate);
+  context.clearRect(0, 0, winW, winH);
+
+  //Update rotating rSquares
+  rSquares.forEach(rSquare => {
+    rSquare.update();
+  });
+
+}
+
+
+//Initialize
+init();
 //make things move
 animate();
