@@ -4,11 +4,11 @@ let winW = window.innerWidth;
 
 //Constant values
 const numSquares = 200;
-const colors = [
-  "rgba(190, 30, 34, .9)",
-  "rgba(190, 83, 18, .9)",
-  "rgba(199, 186, 55, .9)",
-  "rgba(96, 103, 65, .9)"
+const colorMatrix = [
+  [190,30,34,.9],
+  [190,83,18,.9],
+  [199,186,55,.9],
+  [96,103,65,.9]
 ];
 
 //Universal properties for every square
@@ -30,17 +30,22 @@ canvas.style("border", "1px solid green");
 //Get context
 const context = canvas.node().getContext("2d");
 
-
 //React to window resizing
 d3.select(window).on("resize", resize);
 
 //Utilities
-function randomIntFromInterval(min, max // min and max included
-) {
+//Random integer between two values
+//min and max included
+function randomIntFromInterval(min, max) {
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
+//Contruct color string from matrix
+function constructColor(index) {
+  return "rgba("+colorMatrix[index][0]+","+colorMatrix[index][1]+","+colorMatrix[index][2]+","+colorMatrix[index][3]+")";
+}
 
+//React to resized window
 function resize() {
   winH = window.innerHeight;
   winW = window.innerWidth;
@@ -69,6 +74,7 @@ function RotatingSquare(x, y, ang, side, color) {
     y: dy,
     rotation: dang
   };
+
 }
 
 //Draw the square from the center point
@@ -132,10 +138,11 @@ function init() {
     var xPos = randomIntFromInterval(sideLength, canvas.node().width - sideLength);
     var yPos = randomIntFromInterval(sideLength, canvas.node().height - sideLength);
     var startAngle = randomIntFromInterval(0, 359);
-    var color = colors[randomIntFromInterval(0, colors.length - 1)];
+
+    var colorIndex = randomIntFromInterval(0, colorMatrix.length - 1);
 
     rSquares.push(
-      new RotatingSquare(xPos, yPos, startAngle, sideLength, color)
+      new RotatingSquare(xPos, yPos, startAngle, sideLength, constructColor(colorIndex))
     );
   }
 }
