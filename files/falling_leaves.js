@@ -12,9 +12,10 @@ const colorMatrix = [
 ];
 
 //Universal properties for every square
-let dx = 2;
-let dy = 2;
+let dx = 4;
+let dy = 4;
 let dang = 1;
+let colorPulse = 1;
 
 //Create Canvas
 const canvas = d3
@@ -81,7 +82,14 @@ function RotatingSquare(x, y, ang, side, color) {
     y: dy,
     rotation: dang
   };
-  this.color = {
+  this.colorPulse = colorPulse;
+  this.originalColor = {
+    r: color.r,
+    g: color.g,
+    b: color.b,
+    a: color.a
+  }
+  this.currentColor = {
     r: color.r,
     g: color.g,
     b: color.b,
@@ -93,7 +101,7 @@ function RotatingSquare(x, y, ang, side, color) {
 RotatingSquare.prototype.draw = function() {
   //rotate
   //context.fillStyle = this.color;
-  context.fillStyle = constructColorFromObject(this.color);
+  context.fillStyle = constructColorFromObject(this.currentColor);
   //move origin
   context.translate(this.x, this.y);
   //rotate
@@ -135,6 +143,37 @@ RotatingSquare.prototype.update = function() {
   this.y += this.velocity.y;
   this.ang += this.velocity.rotation;
 
+
+  //Color pulsing
+  if(this.currentColor.r === this.originalColor.r &&
+  this.currentColor.g === this.originalColor.g &&
+this.currentColor.b === this.originalColor.b) {
+
+    this.colorPulse = -this.colorPulse;
+
+  }else if(this.currentColor.r === 0 &&
+  this.currentColor.g === 0 &&
+this.currentColor.b === 0){
+
+    this.colorPulse = -this.colorPulse;
+  }
+
+  // add colorPulse
+if(this.colorPulse < 0 && this.currentColor.r >0
+  || this.colorPulse > 0 && this.currentColor.r < this.originalColor.r){
+       this.currentColor.r += this.colorPulse;
+  }
+
+
+  if(this.colorPulse < 0 && this.currentColor.g >0
+    || this.colorPulse > 0 && this.currentColor.g < this.originalColor.g){
+         this.currentColor.g += this.colorPulse;
+    }
+
+    if(this.colorPulse < 0 && this.currentColor.b >0
+      || this.colorPulse > 0 && this.currentColor.b < this.originalColor.b){
+           this.currentColor.b += this.colorPulse;
+      }
 
   //Everything set, draw the square  in the new position
   this.draw();
