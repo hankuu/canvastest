@@ -34,11 +34,8 @@ const context = canvas.node().getContext("2d");
 //React to window resizing
 d3.select(window).on("resize", resize);
 
-
 //Utilities
-function randomIntFromInterval(
-  min,
-  max // min and max included
+function randomIntFromInterval(min, max // min and max included
 ) {
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
@@ -92,6 +89,7 @@ RotatingSquare.prototype.draw = function() {
 
 //Update the rotating square's position
 RotatingSquare.prototype.update = function() {
+
   //Reset angle around full circles
   if (this.ang > 360 && this.velocity.dang > 0) {
     this.ang = 0;
@@ -101,14 +99,14 @@ RotatingSquare.prototype.update = function() {
 
   //Check window left&right
   //NOTE! Does not take into account if corner happens to cross the border
-  if (this.x > winW - this.side / 2 || this.x < this.side / 2) {
+  if (this.x > canvas.node().width - this.side / 2 || this.x < this.side / 2) {
     this.velocity.x = -this.velocity.x;
     this.velocity.rotation = -this.velocity.rotation;
   }
 
   //Check window top&bottom
   //NOTE! Does not take into account if corner happens to cross the border
-  if (this.y > winH - this.side / 2 || this.y < this.side / 2) {
+  if (this.y > canvas.node().height - this.side / 2 || this.y < this.side / 2) {
     this.velocity.y = -this.velocity.y;
     this.velocity.rotation = -this.velocity.rotation;
   }
@@ -123,7 +121,6 @@ RotatingSquare.prototype.update = function() {
 };
 
 //Initialize
-//TODO implement initializing actions
 let rSquares;
 function init() {
   rSquares = [];
@@ -132,8 +129,8 @@ function init() {
   for (let i = 0; i < numSquares; i++) {
     //Generate random values for the squares
     var sideLength = randomIntFromInterval(30, 100);
-    var xPos = randomIntFromInterval(sideLength, winW - sideLength);
-    var yPos = randomIntFromInterval(sideLength, winH - sideLength);
+    var xPos = randomIntFromInterval(sideLength, canvas.node().width - sideLength);
+    var yPos = randomIntFromInterval(sideLength, canvas.node().height - sideLength);
     var startAngle = randomIntFromInterval(0, 359);
     var color = colors[randomIntFromInterval(0, colors.length - 1)];
 
@@ -147,6 +144,7 @@ function init() {
 //This function makes things move
 function animate() {
   window.requestAnimationFrame(animate);
+  //Clear the whole window, not just canvas
   context.clearRect(0, 0, winW, winH);
 
   //Update rotating rSquares
