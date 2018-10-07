@@ -12,9 +12,10 @@ const colorMatrix = [
 ];
 
 //Universal properties for every square
-let dx = 2;
-let dy = 2;
+let dx = 4;
+let dy = 4;
 let dang = 1;
+let colorPulse = 1;
 
 //Create Canvas
 const canvas = d3
@@ -41,8 +42,15 @@ function randomIntFromInterval(min, max) {
 }
 
 //Contruct color string from matrix
-function constructColor(index) {
-  return "rgba("+colorMatrix[index][0]+","+colorMatrix[index][1]+","+colorMatrix[index][2]+","+colorMatrix[index][3]+")";
+function constructColorFromIndex(index) {
+  return  {r: colorMatrix[index][0],
+    g: colorMatrix[index][1],
+    b: colorMatrix[index][2],
+    a: colorMatrix[index][3]};
+}
+
+function constructColorFromObject(colorObject) {
+  return "rgba("+colorObject.r+","+colorObject.g+","+colorObject.b+","+colorObject.a+")";
 }
 
 //React to resized window
@@ -74,13 +82,26 @@ function RotatingSquare(x, y, ang, side, color) {
     y: dy,
     rotation: dang
   };
-
+  this.colorPulse = colorPulse;
+  this.originalColor = {
+    r: color.r,
+    g: color.g,
+    b: color.b,
+    a: color.a
+  }
+  this.currentColor = {
+    r: color.r,
+    g: color.g,
+    b: color.b,
+    a: color.a
+  }
 }
 
 //Draw the square from the center point
 RotatingSquare.prototype.draw = function() {
   //rotate
-  context.fillStyle = this.color;
+  //context.fillStyle = this.color;
+  context.fillStyle = constructColorFromObject(this.currentColor);
   //move origin
   context.translate(this.x, this.y);
   //rotate
@@ -122,6 +143,38 @@ RotatingSquare.prototype.update = function() {
   this.y += this.velocity.y;
   this.ang += this.velocity.rotation;
 
+
+  //Color pulsing
+  if(this.currentColor.r === this.originalColor.r &&
+  this.currentColor.g === this.originalColor.g &&
+this.currentColor.b === this.originalColor.b) {
+
+    this.colorPulse = -this.colorPulse;
+
+  }else if(this.currentColor.r === 0 &&
+  this.currentColor.g === 0 &&
+this.currentColor.b === 0){
+
+    this.colorPulse = -this.colorPulse;
+  }
+
+  // add colorPulse
+if(this.colorPulse < 0 && this.currentColor.r >0
+  || this.colorPulse > 0 && this.currentColor.r < this.originalColor.r){
+       this.currentColor.r += this.colorPulse;
+  }
+
+
+  if(this.colorPulse < 0 && this.currentColor.g >0
+    || this.colorPulse > 0 && this.currentColor.g < this.originalColor.g){
+         this.currentColor.g += this.colorPulse;
+    }
+
+    if(this.colorPulse < 0 && this.currentColor.b >0
+      || this.colorPulse > 0 && this.currentColor.b < this.originalColor.b){
+           this.currentColor.b += this.colorPulse;
+      }
+
   //Everything set, draw the square  in the new position
   this.draw();
 };
@@ -142,7 +195,7 @@ function init() {
     var colorIndex = randomIntFromInterval(0, colorMatrix.length - 1);
 
     rSquares.push(
-      new RotatingSquare(xPos, yPos, startAngle, sideLength, constructColor(colorIndex))
+      new RotatingSquare(xPos, yPos, startAngle, sideLength, constructColorFromIndex(colorIndex))
     );
   }
 }
