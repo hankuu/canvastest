@@ -13,7 +13,7 @@
     //   cx.closePath()
     // }
 
-    imdbData = d3.csv("imdb-movies.csv", function(data){
+    imdbData = d3.csv("data/imdb-movies.csv", function(data){
       data.forEach(function(d){
         d.title=d.title;
         d.release_year=+d.release_year;

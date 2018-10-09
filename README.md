@@ -13,5 +13,8 @@ original: [nbremer/canvastutorial](https://github.com/nbremer/canvastutorial).
 
 Tip from [Michael Crump](https://www.michaelcrump.net/how-to-run-html-files-in-your-browser-from-github/)
 
-# view canvas.html live
-view [live](https://hankuu.github.io/canvastest/files/canvas.html)
+# view breathing_earth.html live (WIP)
+view [live](https://hankuu.github.io/canvastest/breathing_earth/breathing_earth.html)
+
+# view scatter_plot.html live (WIP)
+view [live](https://hankuu.github.io/canvastest/scatter_plot/circlesMaps.html)
