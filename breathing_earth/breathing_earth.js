@@ -29,8 +29,7 @@ let canvasHeight = winW/mapRatio;
 
 
 //Create Canvas
-const canvas = d3
-.select("body")
+const canvas = d3.select("body")
 .append("canvas")
 .attr("width", winW)
 .attr("height", canvasHeight) //take the twice the height of <h1> element out
