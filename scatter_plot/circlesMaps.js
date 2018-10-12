@@ -1,31 +1,46 @@
 let winH = window.innerHeight;
 let winW = window.innerWidth;
 
-let canvasHeight = winH-100; //taking out 100 px
-let canvasWidth = winW;
+let canvasHeight = 800 //winH-100; //taking out 100 px
+let canvasWidth = winW-100; //taking out 100px just becaus
 
 
-let canvas = d3.select("body")
+let canvas = d3.select("div")
 .append("canvas")
 .attr("width",canvasWidth)
 .attr("height",canvasHeight)
+.style("border","solid black 1px")
 
 //context
 let cx = canvas.node().getContext("2d")
 
-// function piirraYmpyra(x,y,r) {
-//   cx.beginPath()
-//   cx.arc(x,y,r,0,2*Math.PI)
-//   cx.fill()
-//   cx.closePath()
-// }
+/******************
+* Drawing
+*******************/
+function drawFullCircle(x,y,r, opacity, color) {
+  cx.fillStyle = color
+  cx.globalAlpha = opacity
+  cx.beginPath()
+  cx.arc(x,y,r,0,2*Math.PI)
+  cx.fill()
+  cx.closePath()
+}
+
+function drawCircles() {
+  setScales();
+  imdbData.forEach(function(d){
+    drawFullCircle(xScale(d.rating),yScale(d.budget),
+    rScale(d.profit_ratio),opScale(d.profit_ratio), colorScale(d.release_year))
+  })
+}
 
 /******************
 * Utilities
 *******************/
 let imdbData = null;
 function readData() {
-  imdbData = d3.csv("data/imdb-movies.csv", function(error, data){
+  //imdbData = d3.csv("data/imdb-movies.csv", function(error, data){
+  d3.csv("data/imdb-movies.csv", function(error, data){
     if(error) throw Error
 
     data.forEach(function(d){
@@ -37,54 +52,67 @@ function readData() {
       d.num_voted_users=+d.num_voted_users;
       d.profit_ratio=+d.profit_ratio
 
-      cx.fillStyle = "black"
-      cx.beginPath()
-      cx.arc(xScale(d.rating), yScale(d.budget), 2, 0, 2*Math.PI)
-      cx.closePath()
-      cx.fill()
-
     })//forEach
 
+    imdbData=data;
+    drawCircles();
 
-
-    //minmax
-    // let max = d3.max(data, function(d){ return d.release_year}) //2016
-    // let min = d3.min(data, function(d){ return d.release_year}) //1929
-    // console.log("release_year min: "+min+" max: "+max)
-    // max = d3.max(data, function(d){ return d.budget}) //600000000
-    // min = d3.min(data, function(d){ return d.budget}) //1100
-    // console.log("budget min: "+min+" max: "+max)
-    // max = d3.max(data, function(d){ return d.rating}) //9.3
-    // min = d3.min(data, function(d){ return d.rating}) //1.6
-    // console.log("budget min: "+min+" max: "+max)
-    // //calculates profit_ratio on the fly!
-    // // max = d3.max(data, function(d){ return d.revenue/d.budget})
-    // // min = d3.min(data, function(d){ return d.revenue/d.budget})
-    // // console.log("profit min: "+min+" max: "+max)
-    // max = d3.max(data, function(d){ return d.profit_ratio}) // 409.864
-    // min = d3.min(data, function(d){ return d.profit_ratio}) //0.000018
-    // console.log("profit_ratio min: "+min+" max: "+max)
   });//d3.csv
-}
+}//readData
 
 /*******************
 * Scales
 ********************/
+let xScale = null;
+let yScale = null;
+let rScale = null;
+let opScale = null;
+function setScales(){
+  //X-axis: IMDB rating
+  //round to nearest whole numbers, because ratings are decimals (1.6)
+  xScale = d3.scaleLinear()
+  .domain([Math.floor(d3.min(imdbData, function(d){ return d.rating})),
+     Math.ceil(d3.max(imdbData, function(d){ return d.rating}))])
+  .range([0,canvasWidth])
 
-//X-axis: IMDB rating
-const xScale = d3.scaleLinear()
-.domain([1, 10]) //data: [1.6 , 9.3]
-.range([0,canvasWidth])
+  //Y-axis: budget in USD
+  //logaritmic scale: distance means 10x
+  //rounding to nearest 1000 down and 100e6 up
+  //I happen to know that max is 100e6 so we need to add one 100e6
+  // let maxmax = Math.ceil(d3.max(imdbData, function(d){ return d.budget}))
+  // if(maxmax%1e6 === 0){
+  //   maxmax += 100e6
+  // }
+  yScale = d3.scaleLog()
+  .domain([500, 700e6])
+  .range([canvasHeight, 0])
 
-//Y-axis: budget in USD
-//logaritmic scale: distance means 10x
-const yScale = d3.scaleLog()
-.domain([1000, 700e6])
-.range([canvasHeight, 0])
+  //r: profit_ratio
+  // rScale = d3.scaleSqrt()
+  // .domain([Math.floor(d3.min(imdbData, function(d){ return d.profit_ratio})),
+  //   Math.ceil(d3.max(imdbData, function(d){ return d.profit_ratio}))])
+  // .range([0, 10])
+  //values copied from NB to understand the L&F
+  //why 6 when max > 400? More dramatic?
+  rScale = d3.scaleSqrt()
+  .domain([0, 6])
+  .range([0, 10])
 
-//r: profit_ratio
+  //opacity: larget profit_ratio -> more transparent
+  //values copied from NB to understand the L&F
+  //domain and data values don't match. More dramatic this way?
+  opScale = d3.scaleLinear()
+  .domain([0, 100])
+  .range([0.2, 0.01])
+  .clamp(true)
 
-//color: release_year
+  //color: release_year
+  //d3.extent finds min/max!
+  colorScale = d3.scaleSequential()
+  .domain(d3.extent(imdbData, function(d){return d.release_year}))
+  .interpolator(d3.interpolateViridis)
+
+} //setScales
 
 
 
