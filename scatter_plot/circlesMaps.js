@@ -1,8 +1,24 @@
 let winH = window.innerHeight;
 let winW = window.innerWidth;
 
-let canvasHeight = 800 //winH-100; //taking out 100 px
+// Modify the HTML elements
+let hoo1_h = d3.select("h1").node().getBoundingClientRect().height
+
+let hoo1 = d3.select("h1")
+.style("height", hoo1_h)
+.style("lineHeight", hoo1_h)
+
+let p = d3.select("#msg")
+.text("winH: "+winH+" winW: "+winW+" h1: "+hoo1_h)
+////////////////////
+
+let topper = d3.select("#top").node().getBoundingClientRect().height
+
+
+let canvasHeight = winH - topper //winH-100; //taking out 100 px
 let canvasWidth = winW-100; //taking out 100px just becaus
+
+
 
 
 let canvas = d3.select("div")
