@@ -1,34 +1,44 @@
-let winH = window.innerHeight;
-let winW = window.innerWidth;
+//Size for the drawing
+let padding = {
+  top: 10,
+  right: 40,
+  bottom: 60,
+  left: 100
+}
 
-// Modify the HTML elements
-let hoo1_h = d3.select("h1").node().getBoundingClientRect().height
+//Hard coded size
+//1368 = 95% of 1440 (current winW in use)
+//650 just a number - fits current winH and under the h1
+//TODO dynamic once this works properly
+let size = {
+  width: 1368 - padding.left - padding.right,
+  height: 650 - padding.top - padding.bottom
+}
 
-let hoo1 = d3.select("h1")
-.style("height", hoo1_h)
-.style("lineHeight", hoo1_h)
+let plotSize = {
+  width: size.width + padding.left + padding.right,
+  height: size.height + padding.top + padding.bottom
+}
 
-let p = d3.select("#msg")
-.text("winH: "+winH+" winW: "+winW+" h1: "+hoo1_h)
-////////////////////
-
-let topper = d3.select("#top").node().getBoundingClientRect().height
-
-
-let canvasHeight = winH - topper //winH-100; //taking out 100 px
-let canvasWidth = winW-100; //taking out 100px just becaus
-
-
-
-
-let canvas = d3.select("div")
+//Create canvas
+let canvas = d3.select("#bottom")
 .append("canvas")
-.attr("width",canvasWidth)
-.attr("height",canvasHeight)
-.style("border","solid black 1px")
+.attr("width",plotSize.width) //should this be size.width?
+.attr("height",plotSize.height) //should this be size.height?
+//.style("border","solid black 1px")
 
-//context
+// get context
 let cx = canvas.node().getContext("2d")
+//move top left inside the padding
+cx.translate(padding.left, padding.top)
+
+//Create SVG container
+let svg = d3.select("#bottom")
+.append("svg")
+.attr("width",plotSize.width) //should this be size.width?
+.attr("height",plotSize.height) //should this be size.height?
+.append("g") //append group to the SVG
+.attr("transform","translate("+padding.left+", "+padding.top+")") //move top left inside the padding
 
 /******************
 * Drawing
@@ -40,15 +50,34 @@ function drawFullCircle(x,y,r, opacity, color) {
   cx.arc(x,y,r,0,2*Math.PI)
   cx.fill()
   cx.closePath()
-}
+} //drawFullCircle
 
-function drawCircles() {
+function renderGraph() {
   setScales();
   imdbData.forEach(function(d){
-    drawFullCircle(xScale(d.rating),yScale(d.budget),
-    rScale(d.profit_ratio),opScale(d.profit_ratio), colorScale(d.release_year))
+    drawFullCircle(xScale(d.rating),
+          yScale(d.budget),
+          rScale(d.profit_ratio),
+          opScale(d.profit_ratio),
+          colorScale(d.release_year))
   })
-}
+
+  renderAxes();
+}//renderGraph
+
+//draw axes
+function renderAxes() {
+
+  let xAxis = svg.append("g")
+  .attr("transform","translate(0,"+size.height+")")
+  .call(d3.axisBottom(xScale))
+
+  let yAxis = svg.append("g")
+  .attr("transform","translate(0,0)")
+  .call(d3.axisLeft(yScale))
+
+}//renderAxes
+
 
 /******************
 * Utilities
@@ -71,7 +100,7 @@ function readData() {
     })//forEach
 
     imdbData=data;
-    drawCircles();
+    renderGraph();
 
   });//d3.csv
 }//readData
@@ -83,13 +112,16 @@ let xScale = null;
 let yScale = null;
 let rScale = null;
 let opScale = null;
+
+//Set scales
 function setScales(){
   //X-axis: IMDB rating
   //round to nearest whole numbers, because ratings are decimals (1.6)
   xScale = d3.scaleLinear()
   .domain([Math.floor(d3.min(imdbData, function(d){ return d.rating})),
      Math.ceil(d3.max(imdbData, function(d){ return d.rating}))])
-  .range([0,canvasWidth])
+  // .range([0,plotSize.width])
+  .range([0,size.width])
 
   //Y-axis: budget in USD
   //logaritmic scale: distance means 10x
@@ -101,7 +133,8 @@ function setScales(){
   // }
   yScale = d3.scaleLog()
   .domain([500, 700e6])
-  .range([canvasHeight, 0])
+  // .range([plotSize.height, 0])
+  .range([size.height, 0])
 
   //r: profit_ratio
   // rScale = d3.scaleSqrt()
@@ -138,6 +171,9 @@ function setScales(){
 function init() {
   if(imdbData==null){
     readData();
+  }else{
+    console.log("No need to reRead data?")
+    renderGraph();
   }
 
 }

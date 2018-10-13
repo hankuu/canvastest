@@ -7,9 +7,22 @@
       margin: 0;
     }
 
+/* Without the following svg is plotted under canvas
+TODO: fix relative to container */
+    svg, canvas {
+      position: absolute;
+      /* top: 0; */
+      top: 50;
+      left: 0;
+    }
+
+
+
     h1 {
       font-family: sans-serif;
       text-align: center;
+      height: 50 px;
+      line-height: 50 px;
     }
     .container {
       position: absolute;
@@ -19,15 +32,14 @@
       left: 0;
       right: 0;
       width: 95%;
-      height: 100%;
     }
+
   </style>
 </head>
 <body>
   <div class="container">
     <div id="top">
       <h1>A scatter plot (original by Nadieh Bremer)</h1>
-      <p id="msg">Hello</p>
     </div>
     <div id="bottom"></div>
     <script type="text/javascript" src="circlesMaps.js"></script>
