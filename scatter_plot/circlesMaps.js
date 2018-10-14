@@ -102,7 +102,7 @@ function addTitles(){
 
     //Y-axis: Movie profit
     svg.append("text")
-    .attr("transform", "translate("+(-padding.left)+","+(size.height/2)+")")
+    .attr("transform", "translate(-50,"+(size.height/2)+") rotate(-90)")
     .text("Profit")
 
 }
