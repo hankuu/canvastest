@@ -63,21 +63,49 @@ function renderGraph() {
   })
 
   renderAxes();
+  addTitles();
 }//renderGraph
 
 //draw axes
 function renderAxes() {
+  let xAxis = d3.axisBottom(xScale)
 
-  let xAxis = svg.append("g")
+  svg.append("g")
   .attr("transform","translate(0,"+size.height+")")
-  .call(d3.axisBottom(xScale))
+  .attr("class", "axis")
+  .call(xAxis)
 
-  let yAxis = svg.append("g")
+
+  let yAxis = d3.axisLeft(yScale)
+  .tickFormat(d3.format("$.0s"))
+  .ticks(5)
+
+  svg.append("g")
   .attr("transform","translate(0,0)")
-  .call(d3.axisLeft(yScale))
-
+  .attr("class", "axis")
+  .call(yAxis)
 }//renderAxes
 
+
+//add titles
+function addTitles(){
+    //title
+    svg.append("text")
+    .attr("transform", "translate("+(size.width/2)+","+(padding.top)+")")
+    .text("TITLE")
+
+    //X-axis: IMDB rating
+    svg.append("text")
+    .attr("transform", "translate("+(size.width/2)+","+(size.height+padding.top+30)+")")
+    .text("IMDB rating")
+
+
+    //Y-axis: Movie profit
+    svg.append("text")
+    .attr("transform", "translate("+(-padding.left)+","+(size.height/2)+")")
+    .text("Profit")
+
+}
 
 /******************
 * Utilities
