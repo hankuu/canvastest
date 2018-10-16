@@ -91,17 +91,21 @@ function renderAxes() {
 function addTitles(){
     //title
     svg.append("text")
-    .attr("transform", "translate("+(size.width/2)+","+(padding.top)+")")
-    .text("TITLE")
+    .attr("class", "chartTitle")
+    // .attr("transform", "translate("+(size.width/2)+","+(padding.top)+")")
+    .attr("transform", "translate("+(padding.right)+","+(padding.top)+")")
+    .text("How have movies from 1929 to 2016 performed? Exploring profit against IMDB ratings")
 
     //X-axis: IMDB rating
     svg.append("text")
+    .attr("class", "axisTitle")
     .attr("transform", "translate("+(size.width/2)+","+(size.height+padding.top+30)+")")
     .text("IMDB rating")
 
 
     //Y-axis: Movie profit
     svg.append("text")
+    .attr("class", "axisTitle")
     .attr("transform", "translate(-50,"+(size.height/2)+") rotate(-90)")
     .text("Profit")
 
