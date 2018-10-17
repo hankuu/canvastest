@@ -20,25 +20,32 @@ let plotSize = {
   height: size.height + padding.top + padding.bottom
 }
 
-//Create canvas
-let canvas = d3.select("#bottom")
-.append("canvas")
-.attr("width",plotSize.width) //should this be size.width?
-.attr("height",plotSize.height) //should this be size.height?
-//.style("border","solid black 1px")
-
-// get context
-let cx = canvas.node().getContext("2d")
-//move top left inside the padding
-cx.translate(padding.left, padding.top)
-
-//Create SVG container
+//Create SVG container before CANVAS to catch the mouse
 let svg = d3.select("#bottom")
 .append("svg")
 .attr("width",plotSize.width) //should this be size.width?
 .attr("height",plotSize.height) //should this be size.height?
 .append("g") //append group to the SVG
 .attr("transform","translate("+padding.left+", "+padding.top+")") //move top left inside the padding
+
+
+//Create canvas
+let canvas = d3.select("#bottom")
+.append("canvas")
+.attr("width",plotSize.width) //should this be size.width?
+.attr("height",plotSize.height) //should this be size.height?
+.on("mousemove", function() { checkMouse() }) //take care of events, but logic is handled elsewhere.
+
+// get context
+let cx = canvas.node().getContext("2d")
+//move top left inside the padding
+cx.translate(padding.left, padding.top)
+
+//Voronoi for catching mouse cursor
+const voronoi = d3.voronoi()
+  .x(function(d){ return d.x})
+  .y(function(d){ return d.y})
+  .extent([[0,0],[size.width, size.height]])
 
 /******************
 * Drawing
@@ -137,8 +144,15 @@ function readData() {
     imdbData=data;
     renderGraph();
 
+    //create Voronoi grid
+    diagram = voronoi(imdbData)
+
   });//d3.csv
 }//readData
+
+function checkMouse() {
+ console.log("mousemove")
+}
 
 /*******************
 * Scales
