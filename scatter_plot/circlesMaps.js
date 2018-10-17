@@ -92,23 +92,26 @@ function addTitles(){
     //title
     svg.append("text")
     .attr("class", "chartTitle")
-    // .attr("transform", "translate("+(size.width/2)+","+(padding.top)+")")
     .attr("transform", "translate("+(padding.right)+","+(padding.top)+")")
+    .attr("textLength", ""+size.width) //stretch!
     .text("How have movies from 1929 to 2016 performed? Exploring profit against IMDB ratings")
 
     //X-axis: IMDB rating
-    svg.append("text")
+    let xAxisTitle = svg.append("text")
     .attr("class", "axisTitle")
-    .attr("transform", "translate("+(size.width/2)+","+(size.height+padding.top+30)+")")
     .text("IMDB rating")
+
+    //Centering the text on x-axis
+    xAxisTitle.attr("transform", "translate("+((size.width/2)-(xAxisTitle.node().getBoundingClientRect().width/2))+", "+(size.height+padding.top+30)+")")
 
 
     //Y-axis: Movie profit
-    svg.append("text")
+    let yAxisTitle = svg.append("text")
     .attr("class", "axisTitle")
-    .attr("transform", "translate(-50,"+(size.height/2)+") rotate(-90)")
     .text("Profit")
 
+    //Centering the text on y-axis
+    yAxisTitle.attr("transform", "translate(-50,"+((size.height/2)+(yAxisTitle.node().getBoundingClientRect().width/2))+") rotate(-90)")
 }
 
 /******************
