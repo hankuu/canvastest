@@ -34,201 +34,168 @@ let canvas = d3.select("#bottom")
 .append("canvas")
 .attr("width",plotSize.width) //should this be size.width?
 .attr("height",plotSize.height) //should this be size.height?
-.on("mousemove", function() { checkMouse() }) //take care of events, but logic is handled elsewhere.
+//Can't do this. Don't exactly know why...
+//.on("mousemove", function() { checkMouse() }) //take care of events, but logic is handled elsewhere.
 
 // get context
 let cx = canvas.node().getContext("2d")
 //move top left inside the padding
 cx.translate(padding.left, padding.top)
 
-//Voronoi for catching mouse cursor
+
+//Set Scales
+//Domain only after we have data
+const xScale = d3.scaleLinear()
+.range([0,size.width])
+
+//Y-axis: budget in USD
+//logaritmic scale: distance means 10x
+//rounding to nearest 1000 down and 100e6 up
+//I happen to know that max is 100e6 so we need to add one 100e6
+const yScale = d3.scaleLog()
+.domain([500, 700e6])
+.range([size.height, 0])
+
+//r: profit_ratio
+// rScale = d3.scaleSqrt()
+//values copied from NB to understand the L&F
+//why 6 when max > 400? More dramatic?
+const rScale = d3.scaleSqrt()
+.domain([0, 6])
+.range([0, 10])
+
+//opacity: larget profit_ratio -> more transparent
+//values copied from NB to understand the L&F
+//domain and data values don't match. More dramatic this way?
+const opScale = d3.scaleLinear()
+.domain([0, 100])
+.range([0.2, 0.01])
+.clamp(true)
+
+//color: release_year
+//Domain only after we have data
+const colorScale = d3.scaleSequential()
+.interpolator(d3.interpolateViridis)
+
+
+//This is a function. Run only when diagram voronoi(data) is called!!
 const voronoi = d3.voronoi()
-  .x(function(d){ return d.x})
-  .y(function(d){ return d.y})
-  .extent([[0,0],[size.width, size.height]])
+    .x(function (d) { return xScale(d.rating) })
+    .y(function (d) { return yScale(d.budget) })
+    .extent([[0, 0], [size.width, size.height]])
 
-/******************
-* Drawing
-*******************/
-function drawFullCircle(x,y,r, opacity, color) {
-  cx.fillStyle = color
-  cx.globalAlpha = opacity
-  cx.beginPath()
-  cx.arc(x,y,r,0,2*Math.PI)
-  cx.fill()
-  cx.closePath()
-} //drawFullCircle
+/**************************
+** Rendering functions. Outside d3.csv
+***************************/
+    function drawFullCircle(x,y,r, opacity, color) {
+      cx.fillStyle = color
+      cx.globalAlpha = opacity
+      cx.beginPath()
+      cx.arc(x,y,r,0,2*Math.PI)
+      cx.fill()
+      cx.closePath()
+    } //drawFullCircle
 
-function renderGraph() {
-  setScales();
-  imdbData.forEach(function(d){
-    drawFullCircle(xScale(d.rating),
-          yScale(d.budget),
-          rScale(d.profit_ratio),
-          opScale(d.profit_ratio),
-          colorScale(d.release_year))
-  })
+    //draw axes
+    function renderAxes() {
+      let xAxis = d3.axisBottom(xScale)
 
-  renderAxes();
-  addTitles();
-}//renderGraph
+      svg.append("g")
+      .attr("transform","translate(0,"+size.height+")")
+      .attr("class", "axis")
+      .call(xAxis)
 
-//draw axes
-function renderAxes() {
-  let xAxis = d3.axisBottom(xScale)
+      let yAxis = d3.axisLeft(yScale)
+      .tickFormat(d3.format("$.0s"))
+      .ticks(5)
 
-  svg.append("g")
-  .attr("transform","translate(0,"+size.height+")")
-  .attr("class", "axis")
-  .call(xAxis)
+      svg.append("g")
+      .attr("transform","translate(0,0)")
+      .attr("class", "axis")
+      .call(yAxis)
+    }//renderAxes
 
+    //add titles
+    function addTitles(){
+        //title
+        svg.append("text")
+        .attr("class", "chartTitle")
+        .attr("transform", "translate("+(padding.right)+","+(padding.top)+")")
+        .attr("textLength", ""+size.width) //stretch!
+        .text("How have movies from 1929 to 2016 performed? Exploring profit against IMDB ratings")
 
-  let yAxis = d3.axisLeft(yScale)
-  .tickFormat(d3.format("$.0s"))
-  .ticks(5)
+        //X-axis: IMDB rating
+        let xAxisTitle = svg.append("text")
+        .attr("class", "axisTitle")
+        .text("IMDB rating")
 
-  svg.append("g")
-  .attr("transform","translate(0,0)")
-  .attr("class", "axis")
-  .call(yAxis)
-}//renderAxes
-
-
-//add titles
-function addTitles(){
-    //title
-    svg.append("text")
-    .attr("class", "chartTitle")
-    .attr("transform", "translate("+(padding.right)+","+(padding.top)+")")
-    .attr("textLength", ""+size.width) //stretch!
-    .text("How have movies from 1929 to 2016 performed? Exploring profit against IMDB ratings")
-
-    //X-axis: IMDB rating
-    let xAxisTitle = svg.append("text")
-    .attr("class", "axisTitle")
-    .text("IMDB rating")
-
-    //Centering the text on x-axis
-    xAxisTitle.attr("transform", "translate("+((size.width/2)-(xAxisTitle.node().getBoundingClientRect().width/2))+", "+(size.height+padding.top+30)+")")
+        //Centering the text on x-axis
+        xAxisTitle.attr("transform", "translate("+((size.width/2)-(xAxisTitle.node().getBoundingClientRect().width/2))+", "+(size.height+padding.top+30)+")")
 
 
-    //Y-axis: Movie profit
-    let yAxisTitle = svg.append("text")
-    .attr("class", "axisTitle")
-    .text("Profit")
+        //Y-axis: Movie profit
+        let yAxisTitle = svg.append("text")
+        .attr("class", "axisTitle")
+        .text("Profit")
 
-    //Centering the text on y-axis
-    yAxisTitle.attr("transform", "translate(-50,"+((size.height/2)+(yAxisTitle.node().getBoundingClientRect().width/2))+") rotate(-90)")
-}
+        //Centering the text on y-axis
+        yAxisTitle.attr("transform", "translate(-50,"+((size.height/2)+(yAxisTitle.node().getBoundingClientRect().width/2))+") rotate(-90)")
+    }
 
-/******************
-* Utilities
-*******************/
-let imdbData = null;
-function readData() {
-  //imdbData = d3.csv("data/imdb-movies.csv", function(error, data){
-  d3.csv("data/imdb-movies.csv", function(error, data){
-    if(error) throw Error
-
-    data.forEach(function(d){
-      d.title=d.title;
-      d.release_year=+d.release_year;
-      d.budget=+d.budget;
-      d.revenue=+d.revenue;
-      d.rating=+d.rating;
-      d.num_voted_users=+d.num_voted_users;
-      d.profit_ratio=+d.profit_ratio
-
-    })//forEach
-
-    imdbData=data;
-    renderGraph();
-
-    //create Voronoi grid
-    diagram = voronoi(imdbData)
-
-  });//d3.csv
-}//readData
-
-function checkMouse() {
- console.log("mousemove")
-}
-
-/*******************
-* Scales
-********************/
-let xScale = null;
-let yScale = null;
-let rScale = null;
-let opScale = null;
-
-//Set scales
-function setScales(){
-  //X-axis: IMDB rating
-  //round to nearest whole numbers, because ratings are decimals (1.6)
-  xScale = d3.scaleLinear()
-  .domain([Math.floor(d3.min(imdbData, function(d){ return d.rating})),
-     Math.ceil(d3.max(imdbData, function(d){ return d.rating}))])
-  // .range([0,plotSize.width])
-  .range([0,size.width])
-
-  //Y-axis: budget in USD
-  //logaritmic scale: distance means 10x
-  //rounding to nearest 1000 down and 100e6 up
-  //I happen to know that max is 100e6 so we need to add one 100e6
-  // let maxmax = Math.ceil(d3.max(imdbData, function(d){ return d.budget}))
-  // if(maxmax%1e6 === 0){
-  //   maxmax += 100e6
-  // }
-  yScale = d3.scaleLog()
-  .domain([500, 700e6])
-  // .range([plotSize.height, 0])
-  .range([size.height, 0])
-
-  //r: profit_ratio
-  // rScale = d3.scaleSqrt()
-  // .domain([Math.floor(d3.min(imdbData, function(d){ return d.profit_ratio})),
-  //   Math.ceil(d3.max(imdbData, function(d){ return d.profit_ratio}))])
-  // .range([0, 10])
-  //values copied from NB to understand the L&F
-  //why 6 when max > 400? More dramatic?
-  rScale = d3.scaleSqrt()
-  .domain([0, 6])
-  .range([0, 10])
-
-  //opacity: larget profit_ratio -> more transparent
-  //values copied from NB to understand the L&F
-  //domain and data values don't match. More dramatic this way?
-  opScale = d3.scaleLinear()
-  .domain([0, 100])
-  .range([0.2, 0.01])
-  .clamp(true)
-
-  //color: release_year
-  //d3.extent finds min/max!
-  colorScale = d3.scaleSequential()
-  .domain(d3.extent(imdbData, function(d){return d.release_year}))
-  .interpolator(d3.interpolateViridis)
-
-} //setScales
+    function draw_all(data){
+      data.forEach(function(d){
+        drawFullCircle(xScale(d.rating),
+              yScale(d.budget),
+              rScale(d.profit_ratio),
+              opScale(d.profit_ratio),
+              colorScale(d.release_year))
+      })//data draw circles
+   }//draw_all
 
 
+/*********************
+** Read in data. Apparently needs quite a lot stuff inside to work properly
+**********************/
+d3.csv("data/imdb-movies.csv", function(error, data){
+  if(error) throw error
 
-/******************
-* Initialise
-*******************/
-function init() {
-  if(imdbData==null){
-    readData();
-  }else{
-    console.log("No need to reRead data?")
-    renderGraph();
-  }
+  data.forEach(function(d){
+    d.title=d.title;
+    d.release_year=+d.release_year;
+    d.budget=+d.budget;
+    d.revenue=+d.revenue;
+    d.rating=+d.rating;
+    d.num_voted_users=+d.num_voted_users;
+    d.profit_ratio=+d.profit_ratio
 
-}
+  })//forEach
 
-/***********
-* main
-************/
+  //ADJUST scales
+  xScale.domain(d3.extent(data, d => d.rating)).nice()
+ colorScale.domain(d3.extent(data, function(d){return d.release_year}))
 
-init();
+//Pass the data to the function. Otherwise it can't draw it properly
+ draw_all(data)
+
+
+  //Draw rest of the graph
+  renderAxes()
+  addTitles()
+
+  //Needs to be inside d3.csv
+  let diagram = voronoi(data)
+
+
+//Add event listening and handling
+//Needs to be inside d3.csv
+  canvas.on("mousemove", function checkMouse(){
+    let myMouse = d3.mouse(this) //works because inside d3.csv????
+
+    let nearest = diagram.find(myMouse[0], myMouse[1], 20)
+    if(nearest){
+      console.log(nearest.data.title)
+    }
+  })//on mousemove
+
+
+})//d3.csv
