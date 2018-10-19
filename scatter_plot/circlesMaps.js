@@ -96,6 +96,8 @@ const voronoi = d3.voronoi()
       cx.closePath()
     } //drawFullCircle
 
+
+
     //draw axes
     function renderAxes() {
       let xAxis = d3.axisBottom(xScale)
@@ -143,6 +145,10 @@ const voronoi = d3.voronoi()
     }
 
     function draw_all(data){
+      // cx.fillStyle="#FFFFFF"
+      // cx.fillRect(padding.left,padding.top,size.width-padding.right,size.height-padding.bottom)
+      cx.clearRect(0,0,plotSize.width,plotSize.height)
+
       data.forEach(function(d){
         drawFullCircle(xScale(d.rating),
               yScale(d.budget),
@@ -151,6 +157,18 @@ const voronoi = d3.voronoi()
               colorScale(d.release_year))
       })//data draw circles
    }//draw_all
+
+
+   //highlight_circle nearest circle
+   function highlight_circle(nearest_movie){
+       drawFullCircle(xScale(nearest_movie.rating),
+       yScale(nearest_movie.budget),
+       rScale(nearest_movie.profit_ratio),
+       1,
+       // opScale(nearest_movie.profit_ratio),
+       "#000000")
+       // colorScale(nearest_movie.release_year))
+   }//highlight_circle
 
 
 /*********************
@@ -191,9 +209,14 @@ d3.csv("data/imdb-movies.csv", function(error, data){
   canvas.on("mousemove", function checkMouse(){
     let myMouse = d3.mouse(this) //works because inside d3.csv????
 
-    let nearest = diagram.find(myMouse[0], myMouse[1], 20)
+    let nearest = diagram.find(myMouse[0]-padding.left, myMouse[1], 20)
     if(nearest){
       console.log(nearest.data.title)
+      draw_all(data)
+      highlight_circle(nearest.data)
+      renderAxes()
+      addTitles()
+
     }
   })//on mousemove
 
