@@ -43,6 +43,9 @@ let cx = canvas.node().getContext("2d")
 cx.translate(padding.left, padding.top)
 
 
+//movie container
+let movies=[];
+
 //Set Scales
 //Domain only after we have data
 const xScale = d3.scaleLinear()
@@ -177,6 +180,59 @@ const voronoi = d3.voronoi()
        // requestAnimationFrame(highlight_circle(nearest_movie))
    }//highlight_circle
 
+/*********************
+** Object
+**********************/
+function Movie(title, release_year, budget,
+revenue, rating, num_voted_users, profit_ratio){
+  this.title = title
+  this.release_year = release_year
+  this.budget = budget
+  this.revenue = revenue
+  this.rating = rating
+  this.num_voted_users = num_voted_users
+  this.profit_ratio = profit_ratio
+
+  this.x = xScale(rating)
+
+  //rising bubbles
+  this.y = yScale(plotSize.height)
+  //TODO needs a bit more work. min speed set ok
+  this.dy = (rScale(profit_ratio)<1) ? 1 : rScale(profit_ratio)
+  this.finaly = yScale(budget)
+
+  this.r = rScale(profit_ratio)
+  this.color = "blue"
+  this.opacity = 0.4
+
+  // drawFullCircle(xScale(d.rating),
+  //       yScale(d.budget),
+  //       rScale(d.profit_ratio),
+  //       opScale(d.profit_ratio),
+  //       colorScale(d.release_year))
+
+  //console.log(this)
+}//object Movie
+
+//Prototype for drawing a movie
+Movie.prototype.draw = function(){
+    cx.fillStyle = this.color
+    cx.globalAlpha = this.opacity
+    cx.beginPath()
+    cx.arc(this.x,this.y,this.r,0,2*Math.PI)
+    cx.fill()
+    cx.closePath()
+}// Movie draw
+
+
+//Update object properties
+Movie.prototype.update = function(){
+  if(this.y > this.finaly){
+    this.y -= this.dy
+  }
+
+  this.draw()
+}
 
 /*********************
 ** Read in data. Apparently needs quite a lot stuff inside to work properly
@@ -197,15 +253,28 @@ d3.csv("data/imdb-movies.csv", function(error, data){
 
   //ADJUST scales
   xScale.domain(d3.extent(data, d => d.rating)).nice()
- colorScale.domain(d3.extent(data, function(d){return d.release_year}))
+  colorScale.domain(d3.extent(data, function(d){return d.release_year}))
+
+ //WIP
+ //create obejcts
+ data.forEach(function(d){
+   movies.push(
+     new Movie(d.title, d.release_year, d.budget, d.revenue, d.rating, d.num_voted_users, d.profit_ratio)
+   )
+ })
+
+ //call to drawing
+ animate();
+
+
 
 //Pass the data to the function. Otherwise it can't draw it properly
- draw_all(data)
+ //draw_all(data)
 
 
   //Draw rest of the graph
-  renderAxes()
-  addTitles()
+  // renderAxes()
+  // addTitles()
 
   //Needs to be inside d3.csv
   let diagram = voronoi(data)
@@ -213,22 +282,70 @@ d3.csv("data/imdb-movies.csv", function(error, data){
 
 //Add event listening and handling
 //Needs to be inside d3.csv
-  canvas.on("mousemove", function checkMouse(){
-    let myMouse = d3.mouse(this) //works because inside d3.csv????
-    let selected = d3.select("#selected")
-    draw_all(data)
-
-    //Find the nearest circle center from mouse coordinates
-    //Search radius specified
-    let nearest = diagram.find(myMouse[0]-padding.left, myMouse[1], 10)
-    //If there is a movie circle within the search radius, then print it's name and highlight it
-    if(nearest){
-      selected.text("Hovering over: "+nearest.data.title)
-      highlight_circle(nearest.data)
-    }else{
-      selected.text("Hovering over: none")
-    }
-  })//on mousemove
+  // canvas.on("mousemove", function checkMouse(){
+  //   let myMouse = d3.mouse(this) //works because inside d3.csv????
+  //   let selected = d3.select("#selected")
+  //   draw_all(data)
+  //
+  //   //Find the nearest circle center from mouse coordinates
+  //   //Search radius specified
+  //   let nearest = diagram.find(myMouse[0]-padding.left, myMouse[1], 10)
+  //   //If there is a movie circle within the search radius, then print it's name and highlight it
+  //   if(nearest){
+  //     selected.text("Hovering over: "+nearest.data.title)
+  //     highlight_circle(nearest.data)
+  //   }else{
+  //     selected.text("Hovering over: none")
+  //   }
+  // })//on mousemove
 
 
 })//d3.csv
+
+
+/**********************
+** Animating the scene
+***********************/
+function animate(){
+  //clear everything
+  d3.select("#bottom").html(null)
+
+  //create svg container for axis
+  svg = d3.select("#bottom")
+  .append("svg")
+  .attr("width",plotSize.width) //should this be size.width?
+  .attr("height",plotSize.height) //should this be size.height?
+  .append("g") //append group to the SVG
+  .attr("transform","translate("+padding.left+", "+padding.top+")") //move top left inside the padding
+
+
+  //Create canvas container for bubbles
+  canvas = d3.select("#bottom")
+  .append("canvas")
+  .attr("width",plotSize.width) //should this be size.width?
+  .attr("height",plotSize.height) //should this be size.height?
+  //Can't do this. Don't exactly know why...
+  //.on("mousemove", function() { checkMouse() }) //take care of events, but logic is handled elsewhere.
+
+  // get context
+  cx = canvas.node().getContext("2d")
+  //move top left inside the padding
+  cx.translate(padding.left, padding.top)
+
+//  cx.clearRect(0,0,plotSize.width,plotSize.height)
+
+  //update and draw movies
+  movies.forEach((movie)=>{
+    movie.update()
+  })
+
+  //draw axis and add titles
+  renderAxes();
+  addTitles();
+
+  //redraw!
+  requestAnimationFrame(animate)
+}
+
+
+//animate();
