@@ -215,7 +215,7 @@ d3.csv("data/imdb-movies.csv", function(error, data){
 //Needs to be inside d3.csv
   canvas.on("mousemove", function checkMouse(){
     let myMouse = d3.mouse(this) //works because inside d3.csv????
-
+    let selected = d3.select("#selected")
     draw_all(data)
 
     //Find the nearest circle center from mouse coordinates
@@ -223,8 +223,10 @@ d3.csv("data/imdb-movies.csv", function(error, data){
     let nearest = diagram.find(myMouse[0]-padding.left, myMouse[1], 10)
     //If there is a movie circle within the search radius, then print it's name and highlight it
     if(nearest){
-      console.log(nearest.data.title)
+      selected.text("Hovering over: "+nearest.data.title)
       highlight_circle(nearest.data)
+    }else{
+      selected.text("Hovering over: none")
     }
   })//on mousemove
 
