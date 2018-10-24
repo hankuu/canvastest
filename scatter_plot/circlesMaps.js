@@ -195,11 +195,16 @@ revenue, rating, num_voted_users, profit_ratio){
 
   this.x = xScale(rating)
 
+  //Draw in place
+  this.y = yScale(budget)
+
+
   //descending bubbles
-  this.y = 0
-  //TODO needs a bit more work. min speed set ok
-  this.dy = (rScale(profit_ratio)<1) ? 1 : rScale(profit_ratio)
-  this.finaly = yScale(budget)
+  // this.y = 0
+  // //TODO needs a bit more work. min speed set ok
+  // this.dy = (rScale(profit_ratio)<1) ? 1 : rScale(profit_ratio)
+  // this.finaly = yScale(budget)
+  //rising bubbles
   // this.y = yScale(plotSize.height)
   // //TODO needs a bit more work. min speed set ok
   // this.dy = (rScale(profit_ratio)<1) ? 1 : rScale(profit_ratio)
@@ -215,7 +220,6 @@ revenue, rating, num_voted_users, profit_ratio){
   //       opScale(d.profit_ratio),
   //       colorScale(d.release_year))
 
-  //console.log(this)
 }//object Movie
 
 //Prototype for drawing a movie
@@ -229,14 +233,18 @@ Movie.prototype.draw = function(){
 }// Movie draw
 
 
-//Update object properties
+//Prototype for updating object properties
+//calls draw
 Movie.prototype.update = function(){
+  //for rising bubbles
   // if(this.y > this.finaly){
   //   this.y -= this.dy
   // }
-  if(this.y < this.finaly){
-    this.y += this.dy
-  }
+
+  //for descending bubbles
+  // if(this.y < this.finaly){
+  //   this.y += this.dy
+  // }
 
   this.draw()
 }
