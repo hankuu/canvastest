@@ -46,6 +46,14 @@ cx.translate(padding.left, padding.top)
 //movie container
 let movies=[];
 
+//catch mouse
+//first set to 0,0
+let myMouse = {
+  x: 0,
+  y: 0
+}
+
+
 //Set Scales
 //Domain only after we have data
 const xScale = d3.scaleLinear()
@@ -90,14 +98,14 @@ const voronoi = d3.voronoi()
 /**************************
 ** Rendering functions. Outside d3.csv
 ***************************/
-    function drawFullCircle(x,y,r, opacity, color) {
-      cx.fillStyle = color
-      cx.globalAlpha = opacity
-      cx.beginPath()
-      cx.arc(x,y,r,0,2*Math.PI)
-      cx.fill()
-      cx.closePath()
-    } //drawFullCircle
+    // function drawFullCircle(x,y,r, opacity, color) {
+    //   cx.fillStyle = color
+    //   cx.globalAlpha = opacity
+    //   cx.beginPath()
+    //   cx.arc(x,y,r,0,2*Math.PI)
+    //   cx.fill()
+    //   cx.closePath()
+    // } //drawFullCircle
 
 
 
@@ -147,38 +155,46 @@ const voronoi = d3.voronoi()
         yAxisTitle.attr("transform", "translate(-50,"+((size.height/2)+(yAxisTitle.node().getBoundingClientRect().width/2))+") rotate(-90)")
     }
 
-    function draw_all(data){
-      // cx.translate(-padding.left, -padding.top)
-      //TODO: find out why svg diappears with fillRect
-      // cx.fillStyle="rgba(255,255,255,0.5)"
-      // cx.fillRect(0,0,plotSize.width,plotSize.height)
-      cx.clearRect(0,0,plotSize.width,plotSize.height)
-      // cx.translate(padding.left, padding.top)
-
-      data.forEach(function(d){
-        drawFullCircle(xScale(d.rating),
-              yScale(d.budget),
-              rScale(d.profit_ratio),
-              opScale(d.profit_ratio),
-              colorScale(d.release_year))
-      })//data draw circles
-   }//draw_all
-
-
-   //highlight_circle nearest circle
-   function highlight_circle(nearest_movie){
+   //  function draw_all(data){
+   //    // cx.translate(-padding.left, -padding.top)
+   //    //TODO: find out why svg diappears with fillRect
+   //    // cx.fillStyle="rgba(255,255,255,0.5)"
+   //    // cx.fillRect(0,0,plotSize.width,plotSize.height)
+   //    cx.clearRect(0,0,plotSize.width,plotSize.height)
+   //    // cx.translate(padding.left, padding.top)
+   //
+   //    data.forEach(function(d){
+   //      drawFullCircle(xScale(d.rating),
+   //            yScale(d.budget),
+   //            rScale(d.profit_ratio),
+   //            opScale(d.profit_ratio),
+   //            colorScale(d.release_year))
+   //    })//data draw circles
+   // }//draw_all
 
 
-       drawFullCircle(xScale(nearest_movie.rating),
-       yScale(nearest_movie.budget),
-       rScale(nearest_movie.profit_ratio),
-       1,
-       // opScale(nearest_movie.profit_ratio),
-       "#000000")
-       // colorScale(nearest_movie.release_year))
+   // //highlight_circle nearest circle
+   // function highlight_circle(nearest_movie){
+   //
+   //
+   //     drawFullCircle(xScale(nearest_movie.rating),
+   //     yScale(nearest_movie.budget),
+   //     rScale(nearest_movie.profit_ratio),
+   //     1,
+   //     // opScale(nearest_movie.profit_ratio),
+   //     "#000000")
+   //     // colorScale(nearest_movie.release_year))
+   //
+   //     // requestAnimationFrame(highlight_circle(nearest_movie))
+   // }//highlight_circle
 
-       // requestAnimationFrame(highlight_circle(nearest_movie))
-   }//highlight_circle
+/*********************
+** Utilities
+**********************/
+function getDistance(x1,y1,x2,y2){
+  return Math.sqrt(Math.pow((x2-x1),2) + Math.pow((y2-y1),2))
+}
+
 
 /*********************
 ** Object
@@ -197,6 +213,7 @@ revenue, rating, num_voted_users, profit_ratio){
 
   //Draw in place
   this.y = yScale(budget)
+
 
 
   //descending bubbles
@@ -246,17 +263,34 @@ Movie.prototype.update = function(){
   //   this.y += this.dy
   // }
 
+  //mousehit?
+  // if(myMouse.x - this.x < this.r && myMouse.y - this.y < this.r){
+  // if(Math.abs(myMouse.x - this.x) < this.r){
+  // if(Math.abs(myMouse.x - this.x) < this.r && Math.abs(myMouse.y - this.y) < this.r){
+  if(getDistance(myMouse.x, myMouse.y, this.x, this.y) < this.r) {
+    this.color = "red"
+    // console.log("hit center!")
+  }else{
+    this.color = "blue"
+  }
+
   this.draw()
 }
 
 /*********************
-** Checking mousex
+** Checking mouse
 **********************/
 function checkMouse() {
-    // let myMouse = d3.mouse(this) //works because inside d3.csv????
-    let selected = d3.select("#selected")
-    // selected.text("mousex: "+myMouse[0]+" mousey: "+myMouse[1])
-    selected.text("mousex: "+event.clientX+" mousey: "+event.clientY+" pagex: "+event.pageX+" pagey: "+event.pageY)
+    // console.log(cx.node().getBoundingClientRect())
+    // myMouse.x = event.clientX
+    // myMouse.y = event.clientY
+    myMouse.x = event.clientX - canvas.node().getBoundingClientRect().left - padding.left
+    myMouse.y = event.clientY - canvas.node().getBoundingClientRect().top - padding.top
+
+    // console.log(event.clientY)
+    // console.log(canvas.node().getBoundingClientRect().top)
+    // console.log(myMouse.y)
+    // console.log(padding.top)
 }
 
 /*********************
@@ -280,13 +314,17 @@ d3.csv("data/imdb-movies.csv", function(error, data){
   xScale.domain(d3.extent(data, d => d.rating)).nice()
   colorScale.domain(d3.extent(data, function(d){return d.release_year}))
 
- //WIP
- //create obejcts
+ //create objects
  data.forEach(function(d){
    movies.push(
      new Movie(d.title, d.release_year, d.budget, d.revenue, d.rating, d.num_voted_users, d.profit_ratio)
    )
  })
+
+ //Try with 1
+   // movies.push(
+   //   new Movie(data[0].title, data[0].release_year, data[0].budget, data[0].revenue, data[0].rating, data[0].num_voted_users, data[0].profit_ratio)
+   // )
 
  //call to drawing
  animate();
@@ -350,6 +388,7 @@ function animate(){
   .append("canvas")
   .attr("width",plotSize.width) //should this be size.width?
   .attr("height",plotSize.height) //should this be size.height?
+  .style("border","black 1px solid")
   //Can't do this. Don't exactly know why...
   .on("mousemove", function() { checkMouse() }) //take care of events, but logic is handled elsewhere.
 
@@ -368,6 +407,11 @@ function animate(){
   //draw axis and add titles
   renderAxes();
   addTitles();
+
+  //update text
+  let selected = d3.select("#selected")
+  selected.text("mousex: "+myMouse.x+" mousey: "+myMouse.y)
+
 
   //redraw!
   requestAnimationFrame(animate)
