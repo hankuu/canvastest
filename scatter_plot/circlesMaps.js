@@ -195,11 +195,15 @@ revenue, rating, num_voted_users, profit_ratio){
 
   this.x = xScale(rating)
 
-  //rising bubbles
-  this.y = yScale(plotSize.height)
+  //descending bubbles
+  this.y = 0
   //TODO needs a bit more work. min speed set ok
   this.dy = (rScale(profit_ratio)<1) ? 1 : rScale(profit_ratio)
   this.finaly = yScale(budget)
+  // this.y = yScale(plotSize.height)
+  // //TODO needs a bit more work. min speed set ok
+  // this.dy = (rScale(profit_ratio)<1) ? 1 : rScale(profit_ratio)
+  // this.finaly = yScale(budget)
 
   this.r = rScale(profit_ratio)
   this.color = "blue"
@@ -227,11 +231,24 @@ Movie.prototype.draw = function(){
 
 //Update object properties
 Movie.prototype.update = function(){
-  if(this.y > this.finaly){
-    this.y -= this.dy
+  // if(this.y > this.finaly){
+  //   this.y -= this.dy
+  // }
+  if(this.y < this.finaly){
+    this.y += this.dy
   }
 
   this.draw()
+}
+
+/*********************
+** Checking mousex
+**********************/
+function checkMouse() {
+    // let myMouse = d3.mouse(this) //works because inside d3.csv????
+    let selected = d3.select("#selected")
+    // selected.text("mousex: "+myMouse[0]+" mousey: "+myMouse[1])
+    selected.text("mousex: "+event.clientX+" mousey: "+event.clientY+" pagex: "+event.pageX+" pagey: "+event.pageY)
 }
 
 /*********************
@@ -285,18 +302,19 @@ d3.csv("data/imdb-movies.csv", function(error, data){
   // canvas.on("mousemove", function checkMouse(){
   //   let myMouse = d3.mouse(this) //works because inside d3.csv????
   //   let selected = d3.select("#selected")
-  //   draw_all(data)
+  //   //draw_all(data)
   //
   //   //Find the nearest circle center from mouse coordinates
   //   //Search radius specified
-  //   let nearest = diagram.find(myMouse[0]-padding.left, myMouse[1], 10)
+  //   //let nearest = diagram.find(myMouse[0]-padding.left, myMouse[1], 10)
   //   //If there is a movie circle within the search radius, then print it's name and highlight it
-  //   if(nearest){
-  //     selected.text("Hovering over: "+nearest.data.title)
-  //     highlight_circle(nearest.data)
-  //   }else{
-  //     selected.text("Hovering over: none")
-  //   }
+  //   // if(nearest){
+  //   //   selected.text("Hovering over: "+nearest.data.title)
+  //   //   highlight_circle(nearest.data)
+  //   // }else{
+  //   //   selected.text("Hovering over: none")
+  //   // }
+  //   selected.text("mousex: "+myMouse[0]+" mousey: "+myMouse[1])
   // })//on mousemove
 
 
@@ -325,7 +343,7 @@ function animate(){
   .attr("width",plotSize.width) //should this be size.width?
   .attr("height",plotSize.height) //should this be size.height?
   //Can't do this. Don't exactly know why...
-  //.on("mousemove", function() { checkMouse() }) //take care of events, but logic is handled elsewhere.
+  .on("mousemove", function() { checkMouse() }) //take care of events, but logic is handled elsewhere.
 
   // get context
   cx = canvas.node().getContext("2d")
