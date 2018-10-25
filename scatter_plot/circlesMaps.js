@@ -227,9 +227,12 @@ revenue, rating, num_voted_users, profit_ratio){
   // this.dy = (rScale(profit_ratio)<1) ? 1 : rScale(profit_ratio)
   // this.finaly = yScale(budget)
 
+  this.origR = rScale(profit_ratio)
+  this.origColor = colorScale(release_year)
+  this.origOpacity = opScale(profit_ratio)
   this.r = rScale(profit_ratio)
-  this.color = "blue"
-  this.opacity = 0.4
+  this.color = colorScale(release_year)
+  this.opacity = opScale(profit_ratio)
 
   // drawFullCircle(xScale(d.rating),
   //       yScale(d.budget),
@@ -264,14 +267,12 @@ Movie.prototype.update = function(){
   // }
 
   //mousehit?
-  // if(myMouse.x - this.x < this.r && myMouse.y - this.y < this.r){
-  // if(Math.abs(myMouse.x - this.x) < this.r){
-  // if(Math.abs(myMouse.x - this.x) < this.r && Math.abs(myMouse.y - this.y) < this.r){
   if(getDistance(myMouse.x, myMouse.y, this.x, this.y) < this.r) {
-    this.color = "red"
-    // console.log("hit center!")
+    this.color = "black"
+    this.opacity = 1
   }else{
-    this.color = "blue"
+    this.color = colorScale(this.release_year)
+    this.opacity = opScale(this.profit_ratio)
   }
 
   this.draw()
