@@ -214,31 +214,31 @@ revenue, rating, num_voted_users, profit_ratio){
   //Draw in place
   this.y = yScale(budget)
 
-
-
   //descending bubbles
   // this.y = 0
   // //TODO needs a bit more work. min speed set ok
   // this.dy = (rScale(profit_ratio)<1) ? 1 : rScale(profit_ratio)
   // this.finaly = yScale(budget)
+
   //rising bubbles
   // this.y = yScale(plotSize.height)
   // //TODO needs a bit more work. min speed set ok
   // this.dy = (rScale(profit_ratio)<1) ? 1 : rScale(profit_ratio)
   // this.finaly = yScale(budget)
 
+  // TODO: lose, if not used
   this.origR = rScale(profit_ratio)
   this.origColor = colorScale(release_year)
   this.origOpacity = opScale(profit_ratio)
+
   this.r = rScale(profit_ratio)
   this.color = colorScale(release_year)
   this.opacity = opScale(profit_ratio)
 
-  // drawFullCircle(xScale(d.rating),
-  //       yScale(d.budget),
-  //       rScale(d.profit_ratio),
-  //       opScale(d.profit_ratio),
-  //       colorScale(d.release_year))
+  //for changing Size
+  // this.grow = false
+  this.growSpeed = 0
+
 
 }//object Movie
 
@@ -266,14 +266,44 @@ Movie.prototype.update = function(){
   //   this.y += this.dy
   // }
 
-  //mousehit?
+  //Checking how close the mouse is
   if(getDistance(myMouse.x, myMouse.y, this.x, this.y) < this.r) {
-    this.color = "black"
-    this.opacity = 1
+    // //Inside bubble -> recolor
+    // this.color = "black"
+    // this.opacity = 1
+    // // this.growSpeed = 1
+    this.growSpeed = (this.growSpeed==0) ? 1: this.growSpeed
   }else{
-    this.color = colorScale(this.release_year)
-    this.opacity = opScale(this.profit_ratio)
+//     this.color = colorScale(this.release_year)
+//     this.opacity = opScale(this.profit_ratio)
+// //    this.r = rScale(this.profit_ratio)
   }
+
+  //Grow to size 1,5*original
+
+  this.r += this.growSpeed
+
+  if(this.r < rScale(this.profit_ratio)){
+    //back to original size
+    this.r = rScale(this.profit_ratio)
+    this.growSpeed = 0
+    // this.color = colorScale(this.release_year)
+    this.opacity = opScale(this.profit_ratio)
+  }else if(this.r > 1.5*rScale(this.profit_ratio)){
+    this.growSpeed = -1
+    // this.color = "black"
+    this.opacity = 1
+  }else if(this.growSpeed>0){
+    //growing
+    // this.color = "black"
+    this.opacity = 1
+  }
+
+
+// hiiri osuu -> kasvata
+// kun kasvatetaan, niin kasvata kunnes 1,55kertainen
+// kun isoin koko on saavutettu, niin pienennä
+// riittää muuttaa pelkkä growspeed??
 
   this.draw()
 }
@@ -389,16 +419,13 @@ function animate(){
   .append("canvas")
   .attr("width",plotSize.width) //should this be size.width?
   .attr("height",plotSize.height) //should this be size.height?
-  .style("border","black 1px solid")
-  //Can't do this. Don't exactly know why...
+  // .style("border","black 1px solid")
   .on("mousemove", function() { checkMouse() }) //take care of events, but logic is handled elsewhere.
 
   // get context
   cx = canvas.node().getContext("2d")
   //move top left inside the padding
   cx.translate(padding.left, padding.top)
-
-//  cx.clearRect(0,0,plotSize.width,plotSize.height)
 
   //update and draw movies
   movies.forEach((movie)=>{
@@ -409,9 +436,10 @@ function animate(){
   renderAxes();
   addTitles();
 
+  //TODO: MOVE
   //update text
-  let selected = d3.select("#selected")
-  selected.text("mousex: "+myMouse.x+" mousey: "+myMouse.y)
+  // let selected = d3.select("#selected")
+  // selected.text("mousex: "+myMouse.x+" mousey: "+myMouse.y)
 
 
   //redraw!
