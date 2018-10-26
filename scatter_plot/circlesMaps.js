@@ -21,6 +21,7 @@ let plotSize = {
 }
 
 //Create SVG container before CANVAS to catch the mouse
+//TODO: is this necessary? created in animate() too
 let svg = d3.select("#bottom")
 .append("svg")
 .attr("width",plotSize.width) //should this be size.width?
@@ -28,14 +29,13 @@ let svg = d3.select("#bottom")
 .append("g") //append group to the SVG
 .attr("transform","translate("+padding.left+", "+padding.top+")") //move top left inside the padding
 
-
 //Create canvas
+//TODO: is this necessary? created in animate() too
 let canvas = d3.select("#bottom")
 .append("canvas")
 .attr("width",plotSize.width) //should this be size.width?
 .attr("height",plotSize.height) //should this be size.height?
-//Can't do this. Don't exactly know why...
-//.on("mousemove", function() { checkMouse() }) //take care of events, but logic is handled elsewhere.
+.on("mousemove", function() { checkMouse() }) //take care of events, but logic is handled elsewhere.
 
 // get context
 let cx = canvas.node().getContext("2d")
@@ -68,7 +68,6 @@ const yScale = d3.scaleLog()
 .range([size.height, 0])
 
 //r: profit_ratio
-// rScale = d3.scaleSqrt()
 //values copied from NB to understand the L&F
 //why 6 when max > 400? More dramatic?
 const rScale = d3.scaleSqrt()
@@ -89,26 +88,9 @@ const colorScale = d3.scaleSequential()
 .interpolator(d3.interpolateViridis)
 
 
-//This is a function. Run only when diagram voronoi(data) is called!!
-const voronoi = d3.voronoi()
-    .x(function (d) { return xScale(d.rating) })
-    .y(function (d) { return yScale(d.budget) })
-    .extent([[0, 0], [size.width, size.height]])
-
 /**************************
-** Rendering functions. Outside d3.csv
+** Rendering functions.
 ***************************/
-    // function drawFullCircle(x,y,r, opacity, color) {
-    //   cx.fillStyle = color
-    //   cx.globalAlpha = opacity
-    //   cx.beginPath()
-    //   cx.arc(x,y,r,0,2*Math.PI)
-    //   cx.fill()
-    //   cx.closePath()
-    // } //drawFullCircle
-
-
-
     //draw axes
     function renderAxes() {
       let xAxis = d3.axisBottom(xScale)
@@ -155,38 +137,6 @@ const voronoi = d3.voronoi()
         yAxisTitle.attr("transform", "translate(-50,"+((size.height/2)+(yAxisTitle.node().getBoundingClientRect().width/2))+") rotate(-90)")
     }
 
-   //  function draw_all(data){
-   //    // cx.translate(-padding.left, -padding.top)
-   //    //TODO: find out why svg diappears with fillRect
-   //    // cx.fillStyle="rgba(255,255,255,0.5)"
-   //    // cx.fillRect(0,0,plotSize.width,plotSize.height)
-   //    cx.clearRect(0,0,plotSize.width,plotSize.height)
-   //    // cx.translate(padding.left, padding.top)
-   //
-   //    data.forEach(function(d){
-   //      drawFullCircle(xScale(d.rating),
-   //            yScale(d.budget),
-   //            rScale(d.profit_ratio),
-   //            opScale(d.profit_ratio),
-   //            colorScale(d.release_year))
-   //    })//data draw circles
-   // }//draw_all
-
-
-   // //highlight_circle nearest circle
-   // function highlight_circle(nearest_movie){
-   //
-   //
-   //     drawFullCircle(xScale(nearest_movie.rating),
-   //     yScale(nearest_movie.budget),
-   //     rScale(nearest_movie.profit_ratio),
-   //     1,
-   //     // opScale(nearest_movie.profit_ratio),
-   //     "#000000")
-   //     // colorScale(nearest_movie.release_year))
-   //
-   //     // requestAnimationFrame(highlight_circle(nearest_movie))
-   // }//highlight_circle
 
 /*********************
 ** Utilities
@@ -214,13 +164,13 @@ revenue, rating, num_voted_users, profit_ratio){
   //Draw in place
   this.y = yScale(budget)
 
-  //descending bubbles
+  //for descending bubbles
   // this.y = 0
   // //TODO needs a bit more work. min speed set ok
   // this.dy = (rScale(profit_ratio)<1) ? 1 : rScale(profit_ratio)
   // this.finaly = yScale(budget)
 
-  //rising bubbles
+  // for rising bubbles
   // this.y = yScale(plotSize.height)
   // //TODO needs a bit more work. min speed set ok
   // this.dy = (rScale(profit_ratio)<1) ? 1 : rScale(profit_ratio)
@@ -231,11 +181,13 @@ revenue, rating, num_voted_users, profit_ratio){
   this.origOpacity = opScale(profit_ratio)
   this.origR = rScale(profit_ratio)
 
+  //current drawing properties
   this.r = rScale(profit_ratio)
   this.color = colorScale(release_year)
   this.opacity = opScale(profit_ratio)
 
   //for changing Size
+  //TODO: can this be optimized?
   this.growing = false
   this.growProgress = 0
   this.growSpeed = 0
@@ -270,27 +222,30 @@ Movie.prototype.update = function(){
   // }
 
   //Checking how close the mouse is
+  //If inside bubble and bublle not yet growing -> set growing
   if(getDistance(myMouse.x, myMouse.y, this.x, this.y) < this.r && !this.growing) {
     this.growing = true
-    this.growSpeed = 0.05
+    this.growSpeed = 0.02
     this.opacity = 1
-  }
 
+    //set text to titles
+    let selected = d3.select("#selected")
+    .text("Last hovered over: "+this.title)
+
+  }
 
   this.growProgress = this.growProgress + this.growSpeed
 
   this.r = this.origR + this.growToR * this.ease(this.growProgress)
   this.opacity = this.origOpacity + this.ease(this.growProgress)
 
-  if(this.opacity>1){
-    this.opacity = 1;
-  } else if(this.opacity < 0){
-    this.opacity = 0;
-  }
+  //Opacity cannot go past 1, 0
+  this.opacity = (this.opacity>1) ? 1 : this.opacity
 
   if(this.growProgress>=1){
     this.growSpeed = this.growSpeed*-1
   }else if(this.growProgress <= 0 && this.growing){
+    //reset
     this.r = this.origR
     this.growSpeed = 0
     this.growProgress = 0
@@ -298,7 +253,7 @@ Movie.prototype.update = function(){
     this.growing = false
   }
 
-
+  //Draw bubble
   this.draw()
 }
 
@@ -306,16 +261,8 @@ Movie.prototype.update = function(){
 ** Checking mouse
 **********************/
 function checkMouse() {
-    // console.log(cx.node().getBoundingClientRect())
-    // myMouse.x = event.clientX
-    // myMouse.y = event.clientY
     myMouse.x = event.clientX - canvas.node().getBoundingClientRect().left - padding.left
     myMouse.y = event.clientY - canvas.node().getBoundingClientRect().top - padding.top
-
-    // console.log(event.clientY)
-    // console.log(canvas.node().getBoundingClientRect().top)
-    // console.log(myMouse.y)
-    // console.log(padding.top)
 }
 
 /*********************
@@ -346,7 +293,7 @@ d3.csv("data/imdb-movies.csv", function(error, data){
    )
  })
 
- //Try with 1
+ //Try with 1 for debugging
    // movies.push(
    //   new Movie(data[0].title, data[0].release_year, data[0].budget, data[0].revenue, data[0].rating, data[0].num_voted_users, data[0].profit_ratio)
    // )
@@ -354,39 +301,6 @@ d3.csv("data/imdb-movies.csv", function(error, data){
  //call to drawing
  animate();
 
-
-
-//Pass the data to the function. Otherwise it can't draw it properly
- //draw_all(data)
-
-
-  //Draw rest of the graph
-  // renderAxes()
-  // addTitles()
-
-  //Needs to be inside d3.csv
-  let diagram = voronoi(data)
-
-
-//Add event listening and handling
-//Needs to be inside d3.csv
-  // canvas.on("mousemove", function checkMouse(){
-  //   let myMouse = d3.mouse(this) //works because inside d3.csv????
-  //   let selected = d3.select("#selected")
-  //   //draw_all(data)
-  //
-  //   //Find the nearest circle center from mouse coordinates
-  //   //Search radius specified
-  //   //let nearest = diagram.find(myMouse[0]-padding.left, myMouse[1], 10)
-  //   //If there is a movie circle within the search radius, then print it's name and highlight it
-  //   // if(nearest){
-  //   //   selected.text("Hovering over: "+nearest.data.title)
-  //   //   highlight_circle(nearest.data)
-  //   // }else{
-  //   //   selected.text("Hovering over: none")
-  //   // }
-  //   selected.text("mousex: "+myMouse[0]+" mousey: "+myMouse[1])
-  // })//on mousemove
 
 
 })//d3.csv
@@ -413,7 +327,6 @@ function animate(){
   .append("canvas")
   .attr("width",plotSize.width) //should this be size.width?
   .attr("height",plotSize.height) //should this be size.height?
-  // .style("border","black 1px solid")
   .on("mousemove", function() { checkMouse() }) //take care of events, but logic is handled elsewhere.
 
   // get context
@@ -429,12 +342,6 @@ function animate(){
   //draw axis and add titles
   renderAxes();
   addTitles();
-
-  //TODO: MOVE
-  //update text
-  // let selected = d3.select("#selected")
-  // selected.text("mousex: "+myMouse.x+" mousey: "+myMouse.y)
-
 
   //redraw!
   requestAnimationFrame(animate)
