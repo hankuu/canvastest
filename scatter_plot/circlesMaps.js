@@ -226,19 +226,21 @@ revenue, rating, num_voted_users, profit_ratio){
   // this.dy = (rScale(profit_ratio)<1) ? 1 : rScale(profit_ratio)
   // this.finaly = yScale(budget)
 
-  // TODO: lose, if not used
-  this.origR = rScale(profit_ratio)
+  //original drawing properties
   this.origColor = colorScale(release_year)
   this.origOpacity = opScale(profit_ratio)
+  this.origR = rScale(profit_ratio)
 
   this.r = rScale(profit_ratio)
   this.color = colorScale(release_year)
   this.opacity = opScale(profit_ratio)
 
   //for changing Size
-  // this.grow = false
+  this.growing = false
+  this.growProgress = 0
   this.growSpeed = 0
-
+  this.growToR = 1.5*this.origR-this.origR
+  this.ease = d3.easeSinInOut
 
 }//object Movie
 
@@ -256,6 +258,7 @@ Movie.prototype.draw = function(){
 //Prototype for updating object properties
 //calls draw
 Movie.prototype.update = function(){
+
   //for rising bubbles
   // if(this.y > this.finaly){
   //   this.y -= this.dy
@@ -267,43 +270,34 @@ Movie.prototype.update = function(){
   // }
 
   //Checking how close the mouse is
-  if(getDistance(myMouse.x, myMouse.y, this.x, this.y) < this.r) {
-    // //Inside bubble -> recolor
-    // this.color = "black"
-    // this.opacity = 1
-    // // this.growSpeed = 1
-    this.growSpeed = (this.growSpeed==0) ? 1: this.growSpeed
-  }else{
-//     this.color = colorScale(this.release_year)
-//     this.opacity = opScale(this.profit_ratio)
-// //    this.r = rScale(this.profit_ratio)
+  if(getDistance(myMouse.x, myMouse.y, this.x, this.y) < this.r && !this.growing) {
+    this.growing = true
+    this.growSpeed = 0.05
+    this.opacity = 1
   }
 
-  //Grow to size 1,5*original
 
-  this.r += this.growSpeed
+  this.growProgress = this.growProgress + this.growSpeed
 
-  if(this.r < rScale(this.profit_ratio)){
-    //back to original size
-    this.r = rScale(this.profit_ratio)
+  this.r = this.origR + this.growToR * this.ease(this.growProgress)
+  this.opacity = this.origOpacity + this.ease(this.growProgress)
+
+  if(this.opacity>1){
+    this.opacity = 1;
+  } else if(this.opacity < 0){
+    this.opacity = 0;
+  }
+
+  if(this.growProgress>=1){
+    this.growSpeed = this.growSpeed*-1
+  }else if(this.growProgress <= 0 && this.growing){
+    this.r = this.origR
     this.growSpeed = 0
-    // this.color = colorScale(this.release_year)
+    this.growProgress = 0
     this.opacity = opScale(this.profit_ratio)
-  }else if(this.r > 1.5*rScale(this.profit_ratio)){
-    this.growSpeed = -1
-    // this.color = "black"
-    this.opacity = 1
-  }else if(this.growSpeed>0){
-    //growing
-    // this.color = "black"
-    this.opacity = 1
+    this.growing = false
   }
 
-
-// hiiri osuu -> kasvata
-// kun kasvatetaan, niin kasvata kunnes 1,55kertainen
-// kun isoin koko on saavutettu, niin pienennä
-// riittää muuttaa pelkkä growspeed??
 
   this.draw()
 }
